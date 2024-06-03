@@ -1,31 +1,43 @@
 <?php
 
-$conn = require_once 'connection.php';
+$dbHost = 'localhost';
+$dbName = 'test';
+$dbUser = 'root';
+$dbPassword = '';
 
-// Get the posted data
-if(isset($_POST['submit'])){
-    $store_path = 'D:\wamp64\www\connect.php\AuthProject/'.basename($_FILES['img_file']['name']);
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $phone = $_POST['tel'];
-    $image = $_FILES['img_file']['name'];
-//$image_tmp = $_FILES['image']['tmp_name'];
+$dbCon = new mysqli($dbHost, $dbUser, $dbPassword, $dbName);
+if(!$dbCon){
+    echo 'Connection failed';
+} else{
+    echo 'Connected successfully';
 }
 
-
-//$m2_name = $_POST['name2'];
-//$m2_email = $_POST['email2'];
-//$m2_phone = $_POST['phone2'];
-//$image = $_FILES['image']['name'];
-
-// Upload the image
-move_uploaded_file($image, $store_path);
+// Get the posted data
+$userName = $_POST['userName'];
+$email = $_POST['email'];
+$phone = $_POST['phone'];
+$occupation = $_POST['occupation'];
+$image = $_FILES['image']['name'];
+$tempImage = $_FILES['image']['tmp_name'];
+$folder = 'D:\wamp64\www\connect.php\AuthProject\images//'.basename($image);
 
 // Insert the data into the database
-$stmt = $conn->prepare("INSERT INTO members (name, email, phone, image) VALUES (? ? ? ?)");
-$stmt->bindParam('ssss', $name, $email, $phone, $image);
+$query = "INSERT INTO $dbName.members (name, email, phone, occupation, image) VALUES(?, ?, ?, ?, ?)";
+$stmt = $dbCon->prepare($query);
+$stmt->bind_param('ssiss', $userName, $email, $phone, $occupation, $image);
 
 $stmt->execute();
+
+// Uploading image into the image folder
+//move_uploaded_file($image, $folder);
+
+if(move_uploaded_file($tempImage, $folder)){
+    echo "<h3>Image uploaded successfully.</h3>";
+} else {
+    echo "<h3>Failed to upload image!</h3>";
+    exit;
+}
+
 
 // Redirect to the dashboard page
 header('Location: dashboard.php');
